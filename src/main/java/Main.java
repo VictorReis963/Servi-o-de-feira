@@ -1,6 +1,6 @@
 import dao.*;
 import model.*;
-import service.AssinaturaService;
+import services.AssinaturaService;
 
 import java.util.*;
 

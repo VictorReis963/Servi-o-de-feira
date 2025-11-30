@@ -1,22 +1,13 @@
 package dao;
-
 import model.Cesta;
 import util.CsvUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.*;
 public class CestaDAO {
-
-    private static final String FILE = "resources/cesta.csv";
-
+    private final String path = "resources/cesta.csv";
+    public CestaDAO() { CsvUtils.ensureFileWithHeader(path, "id;idAssinatura;semanaReferencia;status"); }
+    public int nextId() { List<String[]> r = CsvUtils.read(path); return Math.max(1, r.size()); }
     public void save(Cesta c) {
-        String[] linha = {
-            String.valueOf(c.getId()),
-            String.valueOf(c.getSemanaReferencia()),
-            c.getStatus()
-        };
-
-        CsvUtils.appendLine(FILE, linha);
+        String[] cols = { String.valueOf(c.getId()), String.valueOf(c.getIdAssinatura()), String.valueOf(c.getSemanaReferencia()), c.getStatus() };
+        CsvUtils.appendLine(path, CsvUtils.joinWithSemicolon(cols));
     }
 }

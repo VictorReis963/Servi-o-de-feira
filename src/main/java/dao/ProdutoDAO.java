@@ -1,35 +1,28 @@
 package dao;
-
 import model.Produto;
 import util.CsvUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.*;
 public class ProdutoDAO {
-
-    private static final String FILE = "resources/produtos.csv";
-
+    private final String path = "resources/produtos.csv";
+    // carrega todos os produtos, normalizando tipo para FRUTA/LEGUME
     public List<Produto> loadAll() {
-        List<Produto> produtos = new ArrayList<>();
-
-        List<String[]> linhas = CsvUtils.readCsv(FILE);
-
-        for (String[] col : linhas) {
-
-            int id = Integer.parseInt(col[0]);
-            String nome = col[1];
-
-            // normaliza o tipo
-            String tipoOriginal = col[2].trim().toLowerCase();
-
-            String tipo;
-            if (tipoOriginal.contains("fruta")) tipo = "FRUTA";
-            else tipo = "LEGUME";
-
-            produtos.add(new Produto(id, nome, tipo));
+        List<Produto> out = new ArrayList<>();
+        List<String[]> rows = CsvUtils.read(path);
+        if (rows.size() <= 1) return out;
+        for (int i = 1; i < rows.size(); i++) {
+            String[] r = rows.get(i);
+            if (r.length < 3) continue;
+            try {
+                int id = Integer.parseInt(r[0]);
+                String nome = r[1];
+                String tipoRaw = r[2].toLowerCase();
+                String tipo = tipoRaw.contains("fruta") ? "FRUTA" : "LEGUME";
+                out.add(new Produto(id, nome, tipo));
+            } catch (Exception e) { /* pula linha invalida */ }
         }
-
-        return produtos;
+        return out;
+    }
+    public Produto findById(int id) {
+        return loadAll().stream().filter(p -> p.getId() == id).findFirst().orElse(null);
     }
 }

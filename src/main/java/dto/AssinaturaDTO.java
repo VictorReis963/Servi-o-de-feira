@@ -1,30 +1,14 @@
 package dto;
-
-import java.util.ArrayList;
-import java.util.List;
-
-/*
- dto simples que carrega os dados necessarios para criar uma assinatura
-*/
+import java.util.*;
 public class AssinaturaDTO {
-    public String assinanteNome;
+    public String nome;
+    public String celular;
     public String email;
     public int planoId;
-    public String cartao; // numero simplificado
-    public List<ItemDTO> itens = new ArrayList<>();
-
-    public void addItem(String tipo, int quantidade, int produtoId) {
-        itens.add(new ItemDTO(tipo, quantidade, produtoId));
-    }
-
-    public static class ItemDTO {
-        public String tipo;
-        public int quantidade;
+    public List<Item> itens = new ArrayList<>();
+    public static class Item {
         public int produtoId;
-        public ItemDTO(String tipo, int quantidade, int produtoId) {
-            this.tipo = tipo;
-            this.quantidade = quantidade;
-            this.produtoId = produtoId;
-        }
+        public int quantidade;
+        public Item(int produtoId, int quantidade) { this.produtoId = produtoId; this.quantidade = quantidade; }
     }
 }

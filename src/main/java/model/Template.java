@@ -2,24 +2,19 @@ package model;
 
 public class Template {
 
-    private int id;
-    private String status;
-    private String creationDateTime;
-    private String type;
+    private String nome;
+    private String corpo;
 
-    public Template(int id, String status, String creationDateTime, String type) {
-        this.id = id;
-        this.status = status;
-        this.creationDateTime = creationDateTime;
-        this.type = type;
+    public Template(String nome, String corpo) {
+        this.nome = nome;
+        this.corpo = corpo;
     }
 
-    public boolean isAtivo() {
-        return status.equalsIgnoreCase("ATIVO");
-    }
+    public String getNome() { return nome; }
+    public String getCorpo() { return corpo; }
 
-    public int getId() { return id; }
-    public String getStatus() { return status; }
-    public String getCreationDateTime() { return creationDateTime; }
-    public String getType() { return type; }
+    // gera texto final com nome do assinante
+    public String aplicar(String nomeAssinante) {
+        return corpo.replace("{nome}", nomeAssinante);
+    }
 }

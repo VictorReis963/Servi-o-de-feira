@@ -4,15 +4,18 @@ public class Cartao {
 
     private String numero;
     private String validade;
-    private String nomeTitular;
+    private String cvv;
+    private String nomeImpresso;
 
-    public Cartao(String numero, String validade, String nomeTitular) {
+    public Cartao(String numero, String validade, String cvv, String nomeImpresso) {
         this.numero = numero;
         this.validade = validade;
-        this.nomeTitular = nomeTitular;
+        this.cvv = cvv;
+        this.nomeImpresso = nomeImpresso;
     }
 
     public String getNumero() { return numero; }
     public String getValidade() { return validade; }
-    public String getNomeTitular() { return nomeTitular; }
+    public String getCvv() { return cvv; }
+    public String getNomeImpresso() { return nomeImpresso; }
 }
