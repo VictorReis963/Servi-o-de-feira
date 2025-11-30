@@ -43,3 +43,19 @@ resources/
  ├── entrega.csv
  ├── termo.csv
  └── consentimento.csv
+
+
+
+----------------------------------
+
+src/main/java/
+ ├─ controller/AssinaturaController.java
+ ├─ dto/AssinaturaDTO.java
+ ├─ model/... (todos os models)
+ ├─ dao/... (todos os DAOs)
+ ├─ service/AssinaturaService.java
+ ├─ util/CsvUtils.java
+ └─ Main.java
+resources/
+ ├─ planos.csv
+ └─ produtos.csv

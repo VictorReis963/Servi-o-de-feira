@@ -1,20 +1,16 @@
 package model;
 
-import java.util.Date;
-
+import java.time.LocalDateTime;
 public class Termo {
-
     private int id;
-    private Date creationDateTime;
-    private Template template;
-
-    public Termo(int id, Date creationDateTime, Template template) {
-        this.id = id;
-        this.creationDateTime = creationDateTime;
-        this.template = template;
+    private int idAssinatura;
+    private int templateId;
+    private LocalDateTime created;
+    public Termo(int id, int idAssinatura, int templateId, LocalDateTime created) {
+        this.id = id; this.idAssinatura = idAssinatura; this.templateId = templateId; this.created = created;
     }
-
     public int getId() { return id; }
-    public Date getCreationDateTime() { return creationDateTime; }
-    public Template getTemplate() { return template; }
+    public int getIdAssinatura() { return idAssinatura; }
+    public int getTemplateId() { return templateId; }
+    public LocalDateTime getCreated() { return created; }
 }

@@ -1,17 +1,16 @@
 package model;
 
-import java.util.Date;
-
+import java.time.LocalDate;
 public class Entrega {
-
-    private Date dataPrevista;
-    private String janelaEntrega;
-
-    public Entrega(Date dataPrevista, String janelaEntrega) {
-        this.dataPrevista = dataPrevista;
-        this.janelaEntrega = janelaEntrega;
+    private int id;
+    private int idAssinatura;
+    private LocalDate dataPrevista;
+    private String janela;
+    public Entrega(int id, int idAssinatura, LocalDate dataPrevista, String janela) {
+        this.id = id; this.idAssinatura = idAssinatura; this.dataPrevista = dataPrevista; this.janela = janela;
     }
-
-    public Date getDataPrevista() { return dataPrevista; }
-    public String getJanelaEntrega() { return janelaEntrega; }
+    public int getId() { return id; }
+    public int getIdAssinatura() { return idAssinatura; }
+    public LocalDate getDataPrevista() { return dataPrevista; }
+    public String getJanela() { return janela; }
 }
