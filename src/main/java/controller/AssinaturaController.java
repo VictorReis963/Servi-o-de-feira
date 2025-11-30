@@ -1,11 +1,11 @@
 package controller;
 
 import dto.AssinaturaDTO;
-import service.AssinaturaService;
+import services.AssinaturaService;
 
 /*
  controlador leve, repassa o DTO para o service
- comentarios sem acentos e sem maiusculas
+s
 */
 public class AssinaturaController {
 

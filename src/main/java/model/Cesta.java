@@ -1,15 +1,35 @@
 package model;
 
 public class Cesta {
-    private int id;
-    private int idAssinatura;
-    private int semanaReferencia;
-    private String status;
-    public Cesta(int id, int idAssinatura, int semanaReferencia, String status) {
-        this.id = id; this.idAssinatura = idAssinatura; this.semanaReferencia = semanaReferencia; this.status = status;
+
+    private int idCesta;
+    private int idAssinante;
+    private int idPlano;
+    private String dataCriacao;
+
+    public Cesta(int idAssinante, int idPlano, String dataCriacao) {
+        this.idAssinante = idAssinante;
+        this.idPlano = idPlano;
+        this.dataCriacao = dataCriacao;
     }
-    public int getId() { return id; }
-    public int getIdAssinatura() { return idAssinatura; }
-    public int getSemanaReferencia() { return semanaReferencia; }
-    public String getStatus() { return status; }
+
+    public int getIdCesta() {
+        return idCesta;
+    }
+
+    public void setIdCesta(int idCesta) {
+        this.idCesta = idCesta;
+    }
+
+    public int getIdAssinante() {
+        return idAssinante;
+    }
+
+    public int getIdPlano() {
+        return idPlano;
+    }
+
+    public String getDataCriacao() {
+        return dataCriacao;
+    }
 }

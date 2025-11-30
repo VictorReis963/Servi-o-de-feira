@@ -2,149 +2,133 @@ package services;
 
 import dao.*;
 import dto.AssinaturaDTO;
-import dto.AssinaturaWithOwner;
 import model.*;
+import util.CsvUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
-/*
- assinatura service refeito
- - usa os daos existentes (planos, produtos, assinatura, cesta, itemcesta, pagamento, endereco, entrega, termo, consentimento)
- - validacao de itens vs plano
- - pagamento fake: cartao que comeca com 4 eh aprovado
- - grava em todos os arquivos csv via daos
- - comentarios curtos, sem acentos
-*/
 public class AssinaturaService {
 
-    private final PlanoDAO planoDAO = new PlanoDAO();
-    private final ProdutoDAO produtoDAO = new ProdutoDAO();
-    private final AssinaturaDAO assinaturaDAO = new AssinaturaDAO();
-    private final CestaDAO cestaDAO = new CestaDAO();
-    private final ItemCestaDAO itemCestaDAO = new ItemCestaDAO();
-    private final PagamentoDAO pagamentoDAO = new PagamentoDAO();
-    private final EnderecoDAO enderecoDAO = new EnderecoDAO();
-    private final EntregaDAO entregaDAO = new EntregaDAO();
-    private final TermoDAO termoDAO = new TermoDAO();
-    private final ConsentimentoDAO consentimentoDAO = new ConsentimentoDAO();
+    private PlanoDAO planoDAO = new PlanoDAO();
+    private ProdutoDAO produtoDAO = new ProdutoDAO();
+    private AssinaturaDAO assinaturaDAO = new AssinaturaDAO();
+    private CestaDAO cestaDAO = new CestaDAO();
+    private ItemCestaDAO itemCestaDAO = new ItemCestaDAO();
+    private PagamentoDAO pagamentoDAO = new PagamentoDAO();
+    private EnderecoDAO enderecoDAO = new EnderecoDAO();
+    private EntregaDAO entregaDAO = new EntregaDAO();
+    private TermoDAO termoDAO = new TermoDAO();
+    private ConsentimentoDAO consentimentoDAO = new ConsentimentoDAO();
 
-    // cria a assinatura completa; recebe dto e numero do cartao (string)
-    public String criarAssinatura(AssinaturaDTO dto, String cartaoNumero) {
+    // ========================================================================
+    // cria assinatura completa a partir do dto
+    // este e o metodo oficial usado pelo controller
+    // ========================================================================
+    public Assinatura criarAssinatura(AssinaturaDTO dto, String dataCriacao) throws Exception {
 
-        try {
-            // 1) carregar plano
-            Plano plano = planoDAO.findById(dto.planoId);
-            if (plano == null) return "erro: plano invalido";
-
-            // 2) carregar produtos e montar mapa por id
-            List<Produto> produtos = produtoDAO.loadAll();
-            Map<Integer, Produto> produtoMap = produtos.stream()
-                    .collect(Collectors.toMap(Produto::getId, p -> p));
-
-            // 3) validar itens da cesta contra o plano
-            String valida = validarItens(dto, plano, produtoMap);
-            if (!"ok".equals(valida)) return "erro: " + valida;
-
-            // 4) processar pagamento (fake)
-            if (cartaoNumero == null || cartaoNumero.trim().isEmpty())
-                return "erro: cartao nao informado";
-
-            boolean pago = cartaoNumero.trim().startsWith("4");
-            if (!pago) return "erro: pagamento recusado";
-
-            // opcional: criar objeto Cartao (integracao futura)
-            Cartao cartao = new Cartao(cartaoNumero, "", "", dto.nome);
-
-            // 5) gerar ids e persistir dados sequenciais
-            // assinatura
-            int idAss = assinaturaDAO.nextId();
-            String protocolo = UUID.randomUUID().toString().substring(0, 8);
-            LocalDate dataInicio = LocalDate.now();
-            // gravar assinatura com owner (nome + email) no csv
-            AssinaturaWithOwner owner = new AssinaturaWithOwner(
-                    idAss, dto.nome, dto.email, protocolo, "ATIVA", dataInicio.toString()
-            );
-            assinaturaDAO.save(owner);
-
-            // cesta
-            int idCesta = cestaDAO.nextId();
-            Cesta cesta = new Cesta(idCesta, idAss, 1, "ATIVA");
-            cestaDAO.save(cesta);
-
-            // itens da cesta
-            int nextItemId = itemCestaDAO.nextId();
-            for (AssinaturaDTO.Item it : dto.itens) {
-                // validar se produto existe (ja garantido na validacao, mas double-check)
-                if (!produtoMap.containsKey(it.produtoId)) continue;
-                ItemCesta ic = new ItemCesta(nextItemId++, idCesta, it.produtoId, it.quantidade);
-                itemCestaDAO.save(ic);
-            }
-
-            // pagamento
-            int idPagamento = pagamentoDAO.nextId();
-            float valor = plano.getValorBase();
-            String transacao = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
-            Pagamento pagamento = new Pagamento(idPagamento, idAss, valor, "PAGO", transacao);
-            pagamentoDAO.save(pagamento);
-
-            // endereco (pode ser solicitado na UI futuramente); aqui gravamos placeholder
-            int idEndereco = enderecoDAO.nextId();
-            Endereco endereco = new Endereco(idEndereco, idAss, "nao informado", "-", "-", "-");
-            enderecoDAO.save(endereco);
-
-            // entrega (data prevista +3 dias)
-            int idEntrega = entregaDAO.nextId();
-            Entrega entrega = new Entrega(idEntrega, idAss, LocalDate.now().plusDays(3), "08-12");
-            entregaDAO.save(entrega);
-
-            // termo (associa template id 1)
-            int idTermo = termoDAO.nextId();
-            Termo termo = new Termo(idTermo, idAss, 1, LocalDateTime.now());
-            termoDAO.save(termo);
-
-            // consentimento
-            int idConsent = consentimentoDAO.nextId();
-            Consentimento consent = new Consentimento(idConsent, idAss, LocalDate.now(), "ACEITO");
-            consentimentoDAO.save(consent);
-
-            // 6) retorno de sucesso com protocolo
-            return "sucesso: protocolo=" + protocolo;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "erro interno: " + e.getMessage();
+        // valida existencia do plano
+        Plano plano = planoDAO.buscarPorId(dto.plano.getIdPlano());
+        if (plano == null) {
+            throw new Exception("plano inexistente");
         }
+
+        // valida itens
+        validarCesta(dto.cesta, plano, dto.itens, produtoDAO.listarTodos());
+
+        // salva cesta
+        int idCesta = cestaDAO.salvar(dto.cesta);
+
+        // salva itens da cesta
+        for (ItemCesta item : dto.itens) {
+            item.setIdCesta(idCesta);
+            itemCestaDAO.salvar(item);
+        }
+
+        // salva endereco
+        int idEndereco = enderecoDAO.salvar(dto.endereco);
+
+        // salva pagamento
+        int idPagamento = pagamentoDAO.salvar(dto.pagamento);
+
+        // cria assinatura
+        Assinatura assinatura = new Assinatura(
+                0,
+                dto.assinante,
+                plano,
+                dto.cesta,
+                LocalDate.now().toString(),
+                "ATIVA"
+        );
+
+        int idAssinatura = assinaturaDAO.salvar(assinatura);
+
+        // salva entrega
+        Entrega entrega = new Entrega(
+                0,
+                idAssinatura,
+                idEndereco,
+                "pendente",
+                LocalDate.now().toString()
+        );
+
+        entregaDAO.salvar(entrega);
+
+        // salva termo
+        Termo termo = new Termo(
+                0,
+                idAssinatura,
+                "v1",
+                LocalDate.now().toString()
+        );
+
+        int idTermo = termoDAO.salvar(termo);
+
+        // salva consentimento
+        Consentimento c = new Consentimento(
+                0,
+                idTermo,
+                true,
+                LocalDate.now().toString()
+        );
+
+        consentimentoDAO.salvar(c);
+
+        return assinatura;
     }
 
-    // valida itens do dto contra limites do plano
-    // retorna "ok" ou mensagem de erro curta
-    private String validarItens(AssinaturaDTO dto, Plano plano, Map<Integer, Produto> produtoMap) {
+    // ========================================================================
+    // valida cesta conforme regras do plano
+    // ========================================================================
+    public void validarCesta(Cesta cesta, Plano plano,
+                             List<ItemCesta> itens, List<Produto> todosProdutos) throws Exception {
 
-        if (dto.itens == null || dto.itens.isEmpty()) return "cesta vazia";
+        int frutas = 0;
+        int legumes = 0;
+        int verduras = 0;
 
-        int frutas = 0, legumes = 0, verduras = 0;
+        Map<Integer, Produto> mapa = new HashMap<>();
+        for (Produto p : todosProdutos) mapa.put(p.getIdProduto(), p);
 
-        for (AssinaturaDTO.Item it : dto.itens) {
-            if (it.quantidade <= 0) return "quantidade invalida para produto " + it.produtoId;
-            Produto p = produtoMap.get(it.produtoId);
-            if (p == null) return "produto inexistente id=" + it.produtoId;
+        for (ItemCesta item : itens) {
 
-            String tipo = p.getTipo();
-            if ("FRUTA".equalsIgnoreCase(tipo)) frutas += it.quantidade;
-            else if ("LEGUME".equalsIgnoreCase(tipo)) legumes += it.quantidade;
-            else verduras += it.quantidade;
+            Produto p = mapa.get(item.getIdProduto());
+            if (p == null) throw new Exception("produto inexistente: " + item.getIdProduto());
+
+            String tipo = p.getTipo().toLowerCase();
+
+            if (tipo.contains("fruta")) frutas++;
+            else if (tipo.contains("legume")) legumes++;
+            else if (tipo.contains("verdura")) verduras++;
         }
 
-        if (frutas > plano.getQtdFrutas())
-            return "excedeu limite de frutas: " + frutas + " > " + plano.getQtdFrutas();
-        if (legumes > plano.getQtdLegumes())
-            return "excedeu limite de legumes: " + legumes + " > " + plano.getQtdLegumes();
-        if (verduras > plano.getQtdVerduras())
-            return "excedeu limite de verduras: " + verduras + " > " + plano.getQtdVerduras();
+        if (frutas > plano.getQtdFrutasPermitidas())
+            throw new Exception("muitas frutas para o plano escolhido");
 
-        return "ok";
+        if (legumes > plano.getQtdLegumesPermitidos())
+            throw new Exception("muitos legumes para o plano escolhido");
+
+        if (verduras > plano.getQtdVerdurasPermitidas())
+            throw new Exception("muitas verduras para o plano escolhido");
     }
 }
