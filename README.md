@@ -14,7 +14,7 @@ O compilador javac do JDK é responsável por traduzir seu algoritmo em uma ling
 # Tutorial de Execução para Teste da Aplicação
 Para testar a aplicação corretamente,precisamos garantir que o compilador e a JVM saibam onde encontrar o código e os recursos.
 
-Assumindo que você estamos agora no diretório raiz do seu projeto (o nível onde estão as pasta src e o README ), siga os passos no seu terminal:
+Assumindo que você estamos agora no diretório raiz do projeto (o nível onde estão as pasta src e o README ), siga os passos no seu terminal:
 
 
 # 1. Limpa compilações anteriores (opcional, mas recomendado)
@@ -27,16 +27,19 @@ mkdir classes
 # javac -d [Diretório de Saída] -cp [Classpath para dependências] [Arquivos .java]
 javac -d classes -cp . src/main/java/br/com/frutasemcasa/**/*.java
 
+find src/main/java -name "*.java" > sources.txt
+javac -d classes -cp . @sources.txt
+
+
 * Passo 3 : Execução com Classpath (O Teste Final)
 Este é o passo que interliga a execução do java com a localização do  algoritmo e dos dados CSV. O uso do dois-pontos (:) é obrigatório para ambientes Linux (Codespace).
 
-Bash
 
 # O comando diz à JVM para procurar classes na pasta 'classes' E recursos em 'src/main/resources'
 java -cp classes:src/main/resources br.com.frutasemcasa.Main
 O que o -cp faz:
-classes: É o local onde a JVM encontra o seu Bytecode (.class).
+classes: É o local onde a JVM encontra o Bytecode (.class).
 
-src/main/resources: É o local onde a JVM encontra os arquivos de recurso (Plano.csv, Produto.csv), conforme o seu DataLoader espera.
+src/main/resources: É o local onde a JVM encontra os arquivos de recurso (Plano.csv, Produto.csv), conforme o  DataLoader espera.
 
 Se a execução for bem-sucedida, você verá a saída completa do caso de uso, confirmando que todos os componentes da stack funcionaram em conjunto.

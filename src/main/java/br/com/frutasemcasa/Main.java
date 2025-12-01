@@ -20,8 +20,7 @@ public class Main {
         
         // --- PREPARAÇÃO: Carregar Dados ---
         
-        // Crie um diretório 'resources' e coloque os arquivos CSV lá, 
-        // ou use o caminho direto para seus arquivos.
+
         String PLANO_CSV_PATH = "Plano.csv";
         String PRODUTO_CSV_PATH = "Produto.csv"; 
 
