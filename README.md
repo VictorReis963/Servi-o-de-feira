@@ -23,16 +23,21 @@ Assumindo que você estamos agora no diretório raiz do projeto (o nível onde e
 rm -rf classes
 mkdir classes
 
-# 2. Compila todos os arquivos Java
-# javac -d [Diretório de Saída] -cp [Classpath para dependências] [Arquivos .java]
-javac -d classes -cp . src/main/java/br/com/frutasemcasa/**/*.java
+# 2.. Compile tudo de forma correta
+* javac -d [Diretório de Saída] -cp [Classpath para dependências] [Arquivos .java]
 
 find src/main/java -name "*.java" > sources.txt
+
 javac -d classes -cp . @sources.txt
 
 
-* Passo 3 : Execução com Classpath (O Teste Final)
-Este é o passo que interliga a execução do java com a localização do  algoritmo e dos dados CSV. O uso do dois-pontos (:) é obrigatório para ambientes Linux (Codespace).
+# 3. Checa se o Main.class existe
+find classes -name "Main.class"
+
+
+# 4.Execute corretamente
+java -cp classes:src/main/resources br.com.frutasemcasa.Main
+
 
 
 # O comando diz à JVM para procurar classes na pasta 'classes' E recursos em 'src/main/resources'
